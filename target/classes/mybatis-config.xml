@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD config 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<!-- null 허용 : getFileUrl() 리턴값이 null인 경우 => ""빈문자열로 바꿔줘야 오류가 안남. => settings로 오류나지않고 null로 처리할 수 있게 -->
+	<settings>
+		<setting name="jdbcTypeForNull" value="VARCHAR" />
+	</settings>
+	<!-- sql 구문을 저장하고 있는 패키지 설정 : 인터페이스의 패키지 -->
+	<mappers>
+		<package name="dao.mapper" />
+	</mappers>
+</configuration>
