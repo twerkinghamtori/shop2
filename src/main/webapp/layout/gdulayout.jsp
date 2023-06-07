@@ -117,8 +117,8 @@ html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
     </div>
     <div class="w3-half">
       <div class="w3-container w3-orange w3-padding-16 w3-center">
-        <input type="radio" name="pie" onchange="barlinegraph(2)" checked="checked">자유게시판 &nbsp;&nbsp;
-    		<input type="radio" name="pie" onchange="barlinegraph(3)">QNA &nbsp;&nbsp;
+        <input type="radio" name="barline" onchange="barlinegraph(2)" checked="checked">자유게시판 &nbsp;&nbsp;
+    		<input type="radio" name="barline" onchange="barlinegraph(3)">QNA &nbsp;&nbsp;
     		<div id="barcontainer" style="width:100%; border:1px solid #ffffff">
     			<canvas id="canvas2" style="width:100%"></canvas>
     		</div>
@@ -188,7 +188,7 @@ function w3_close() {
 //		exchangeRate();
 		exchangeRate2();
 		piegraph(2);
-		bargraph(2);
+		barlinegraph(2);
 	})
 	function getSido() { //서버에서 리스트객체를 배열로 직접 전달 받음
 		$.ajax({
@@ -295,25 +295,24 @@ function w3_close() {
 	}
 	function piegraph(id) {
 		$.ajax("${path}/ajax/graph1?id="+id, {
-			success : function(json) {
+			success : function(arr) {
 				let canvas = "<canvas id='canvas1' style='width:100%'></canvas>"
-				$("#piecontainer").html(canvas)
-				pieGraphPrint(json, id)
+				$("#piecontainer").html(canvas) //기존 canvas 지우고 새로운 canvas 객체 생성
+				pieGraphPrint(arr, id)
 			}, error: function(e) {
 				alert("piegraph : " + e.status())
 			}
 		})
 	}
-	//arr : 서버에서 전송해준 데이터 값(json 형태) [{"홍길동":10},..]
 	function pieGraphPrint(arr, id) {
 		let colors = []
 		let writers = []
 		let datas = []
 		$.each(arr, function(index) {
 			colors[index] = randomColor(0.5)
-			for(key in arr[index]) {
+			for(key in arr[index]) { //arr[0] : {"홍길동":10} , key : "홍길동"
 				writers.push(key)
-				datas.push(arr[index][key])
+				datas.push(arr[index][key]) //.getKey("홍길동")?
 			}
 		})
 		let title = (id==2)?"자유게시판":"QNA"
@@ -328,12 +327,77 @@ function w3_close() {
 					legend : {display:true, position:"right"},
 					title : {
 						display:true,
-						text:'글쓴이 별' + title + '등록 건수',
-						positon:'bottom'
+						text:'글쓴이 별 ' + title + ' 등록 건수',
+						position:'top'
 					}
 				}
 		}
 		let ctx = document.getElementById("canvas1")
+		new Chart(ctx, config)
+	}
+	function barlinegraph(id) {
+		$.ajax("${path}/ajax/graph2?id="+id, {
+			success : function(arr) {
+				let canvas = "<canvas id='canvas2' style='width:100%'></canvas>"
+				$("#barcontainer").html(canvas)
+				barGraphPrint(arr, id)
+			}, error: function(e) {
+				alert("bargraph : " + e.status())
+			}
+		})
+	}
+	function barGraphPrint(arr, id) {
+		let colors = []
+		let regdates = []
+		let datas = []
+		$.each(arr, function(index) {
+			colors[index] = randomColor(0.5)
+			for(key in arr[index]) {
+				regdates.push(key)
+				datas.push(arr[index][key])
+			}
+		})
+		let title = (id==2)?"자유게시판":"QNA";
+		let chartData = {
+				labels : regdates,
+				datasets : [{
+					type : 'line',
+					borderWidth : 2,
+					borderColor : colors,
+					label : '건수',
+					fill : false,
+					data : datas
+				},{
+					type : 'bar',
+					backgroundColor : colors,
+					label : '건수',
+					data : datas
+				}]
+		}
+		let config = {
+				type : 'bar',
+				data : chartData,
+				options : {
+					responsive : true,
+					title : {
+						display : true,
+						text : '최근 7일 ' + title + ' 등록 건수',
+						position : 'bottom'
+					},
+					legend : {display : false},
+					scales : {
+						xAxes : [{
+							display : true,
+							stacked : true
+						}],
+						yAxes : [{
+							display : true,
+							stacked : true
+						}]
+					}
+				}
+		}
+		let ctx = document.getElementById("canvas2")
 		new Chart(ctx, config)
 	}
 </script>

@@ -223,12 +223,20 @@ public class AjaxController {
 	
 	@RequestMapping("graph1") 
 	public List<Map.Entry<String, Integer>> graph1(String id) {
-		Map<String, Integer> map = service.graph1(id);
+		Map<String, Integer> map = service.graph1(id); //{"홍길동"=10, "김삿갓"=7,...}
 		List<Map.Entry<String, Integer>> list = new ArrayList<>();
 		for(Map.Entry<String, Integer> m : map.entrySet()) {
 			list.add(m);
 		}
-		Collections.sort(list, (m1,m2)->m2.getValue() - m1.getValue()); //등록건수의 내림차순으로 client로 전송
-		return list;
+		Collections.sort(list, (m1,m2)->m2.getValue() - m1.getValue()); //등록건수의 내림차순으로 정렬하여 client로 전송
+		return list; //List 객체는 클라이언트(javascript)에서 배열객체로 전달
+		//map.entry : Json 형식으로 클라이언트에 전달
+	}
+	
+	@RequestMapping("graph2")
+	public List<Map.Entry<String, Integer>> graph2(String id) {
+		Map<String, Integer> map = service.graph2(id); 
+		List<Map.Entry<String, Integer>> list = new ArrayList<>(map.entrySet());
+		return list; 
 	}
 }

@@ -1,13 +1,13 @@
 package logic;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,9 +16,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import dao.BoardDao;
 import dao.ItemDao;
-import dao.UserDao;
 import dao.SaleDao;
 import dao.SaleItemDao;
+import dao.UserDao;
 
 @Service //@Component + Service(controller기능과 dao 기능의 중간 역할 기능)
 public class ShopService {
@@ -216,14 +216,21 @@ public class ShopService {
 		Integer value = 0;
 		for(Map<String, Object> m : list) {
 			for(String s : m.keySet()) {				
-				if(s.equals("writer")) {
-					key = m.get(s).toString();
-				}
-				if(s.equals("cnt")) {
-					value = Integer.parseInt(m.get(s).toString());
-				}		
+				if(s.equals("writer")) key = m.get(s).toString();
+				if(s.equals("cnt")) value = Integer.parseInt(m.get(s).toString()); //mybatis에서 count(*) 형태의 데이터는 long 타입으로 전달
 			}
 			map.put(key, value);
+		}
+		return map;
+	}
+
+	public Map<String, Integer> graph2(String id) {
+		List<Map<String, Object>> list = boardDao.graph2(id);
+		Map<String, Integer> map = new TreeMap<>(); //key값을 기준으로 정렬
+		for(Map<String, Object> m : list) {
+			String day = m.get("d").toString();
+			long cnt = (Long)m.get("cnt");
+			map.put(day, (int)cnt);
 		}
 		return map;
 	}

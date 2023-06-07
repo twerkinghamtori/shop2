@@ -6,6 +6,20 @@ import javax.validation.constraints.NotEmpty;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import lombok.Data;
+/*
+ * lombok : setter, getter, toString, 생성자 등을 자동으로 생성해주는 유틸리티.
+ * 
+ * @Setter
+ * @Getter
+ * @ToString
+ * @EqualsAndHashCode : equals 함수와 hashCode 함수를 자동으로 override
+ * @Data : getter, setter, toString, EqualsAndHashCode, RequiredArgConstructor 생성
+ * @AllArgsConstructor : 모든 멤버를 매개변수로 가지고 있는 생성자 구현
+ * @NoArgsConstructor : 매개변수가 없는 생성자 구현
+ * @RequiredArgConstructor : final, @NotNull 인 멤버변수만 매개변수로 갖는 생성자 구현
+ */
+@Data
 public class Board {
 	private int num;
 	private String boardid;
@@ -25,97 +39,4 @@ public class Board {
 	private int grplevel;
 	private int grpstep;
 	private int commcnt; //db에 없지만 댓글 수를 저장하기 위한 공간.
-	
-	public int getNum() {
-		return num;
-	}
-	public void setNum(int num) {
-		this.num = num;
-	}
-	public String getBoardid() {
-		return boardid;
-	}
-	public void setBoardid(String boardid) {
-		this.boardid = boardid;
-	}
-	public String getWriter() {
-		return writer;
-	}
-	public void setWriter(String writer) {
-		this.writer = writer;
-	}
-	public String getPass() {
-		return pass;
-	}
-	public void setPass(String pass) {
-		this.pass = pass;
-	}
-	public String getTitle() {
-		return title;
-	}
-	public void setTitle(String title) {
-		this.title = title;
-	}
-	public String getContent() {
-		return content;
-	}
-	public void setContent(String content) {
-		this.content = content;
-	}
-	public MultipartFile getFile1() {
-		return file1;
-	}
-	public void setFile1(MultipartFile file1) {
-		this.file1 = file1;
-	}
-	public String getFileurl() {
-		return fileurl;
-	}
-	public void setFileurl(String fileurl) {
-		this.fileurl = fileurl;
-	}
-	public Date getRegdate() {
-		return regdate;
-	}
-	public void setRegdate(Date regdate) {
-		this.regdate = regdate;
-	}
-	public int getReadcnt() {
-		return readcnt;
-	}
-	public void setReadcnt(int readcnt) {
-		this.readcnt = readcnt;
-	}
-	public int getGrp() {
-		return grp;
-	}
-	public void setGrp(int grp) {
-		this.grp = grp;
-	}
-	public int getGrplevel() {
-		return grplevel;
-	}
-	public void setGrplevel(int grplevel) {
-		this.grplevel = grplevel;
-	}
-	public int getGrpstep() {
-		return grpstep;
-	}
-	public void setGrpstep(int grpstep) {
-		this.grpstep = grpstep;
-	}
-	
-	public int getCommcnt() {
-		return commcnt;
-	}
-	public void setCommcnt(int commcnt) {
-		this.commcnt = commcnt;
-	}
-	@Override
-	public String toString() {
-		return "Board [num=" + num + ", boardid=" + boardid + ", writer=" + writer + ", pass=" + pass + ", title="
-				+ title + ", content=" + content + ", file1=" + file1 + ", fileurl=" + fileurl + ", regdate=" + regdate
-				+ ", readcnt=" + readcnt + ", grp=" + grp + ", grplevel=" + grplevel + ", grpstep=" + grpstep
-				+ ", commcnt=" + commcnt + "]";
-	}	
 }

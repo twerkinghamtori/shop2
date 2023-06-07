@@ -49,4 +49,7 @@ public interface BoardMapper {
 
 	@Select("select writer, count(*) cnt from board where boardid=#{id} group by writer order by 2 desc limit 0,8")
 	List<Map<String, Object>> graph1(Map<String, Object> param);
+
+	@Select("SELECT date_format(regdate,'%Y-%m-%d') d, COUNT(*) cnt FROM board where boardid=#{id} GROUP BY date_format(regdate,'%Y-%m-%d') ORDER BY d asc LIMIT 7")
+	List<Map<String, Object>> graph2(Map<String, Object> param);
 }

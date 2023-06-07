@@ -84,4 +84,10 @@ public class BoardDao {
 		return template.getMapper(cls).graph1(param);
 	}
 
+	public List<Map<String, Object>> graph2(String id) {
+		param.clear();
+		param.put("id", id);
+		return template.getMapper(cls).graph2(param);
+	}
+
 }
