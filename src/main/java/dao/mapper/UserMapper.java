@@ -11,11 +11,11 @@ import org.apache.ibatis.annotations.Update;
 import logic.User;
 
 public interface UserMapper {
-	@Insert("insert into useraccount (userid, password, username, phoneno, postcode, address, email, birthday) values (#{userid}, #{password}, #{username}, #{phoneno}, #{postcode}, #{address}, #{email}, #{birthday})")
+	@Insert("insert into usersecurity (userid, password, username, phoneno, postcode, address, email, birthday) values (#{userid}, #{password}, #{username}, #{phoneno}, #{postcode}, #{address}, #{email}, #{birthday})")
 	void userinsert(User user);
 
 	@Select({"<script> ",
-		"select * from useraccount ",
+		"select * from usersecurity ",
 		"<if test='userid != null'> ",
 		"where userid=#{userid} ",
 		"</if>",
@@ -27,19 +27,19 @@ public interface UserMapper {
 	})
 	List<User> select(Map<String, Object> param);
 
-	@Update("update useraccount set username=#{username}, phoneno=#{phoneno}, postcode=#{postcode}, address=#{address}, email=#{email}, birthday=#{birthday}  where userid=#{userid}")
+	@Update("update usersecurity set username=#{username}, phoneno=#{phoneno}, postcode=#{postcode}, address=#{address}, email=#{email}, birthday=#{birthday}  where userid=#{userid}")
 	void update(User user);
 
-	@Delete("delete from useraccount where userid=#{userid}")
+	@Delete("delete from usersecurity where userid=#{userid}")
 	void delete(Map<String, Object> param);
 
-	@Update("update useraccount set password=#{password} where userid=#{userid}")
+	@Update("update usersecurity set password=#{password} where userid=#{userid}")
 	void changePass(Map<String, Object> param);
 
-	@Select("select userid from useraccount where email=#{email} and phoneno=#{phoneno}")
+	@Select("select userid from usersecurity where email=#{email} and phoneno=#{phoneno}")
 	String searchId(Map<String, Object> param);
 
-	@Select("select password from useraccount where userid=#{userid} and email=#{email} and phoneno=#{phoneno}")
+	@Select("select password from usersecurity where userid=#{userid} and email=#{email} and phoneno=#{phoneno}")
 	String searchPw(Map<String, Object> param);
 
 //	@Select({"<script>",

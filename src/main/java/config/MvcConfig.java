@@ -23,7 +23,7 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import interceptor.BoardInterceptor;
 
 @Configuration //xml 방식의 설정을 대신하는 자바 클래스
-@ComponentScan(basePackages= {"controller","logic", "dao", "aop", "websocket"})
+@ComponentScan(basePackages= {"controller","logic", "dao", "aop", "websocket", "util"})
 @EnableAspectJAutoProxy //aop관련 annotation설정
 @EnableWebMvc //유효성 검증 사용
 public class MvcConfig implements WebMvcConfigurer{

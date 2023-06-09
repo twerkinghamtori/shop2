@@ -15,7 +15,6 @@ import javax.mail.Authenticator;
 import javax.mail.BodyPart;
 import javax.mail.Message;
 import javax.mail.MessagingException;
-import javax.mail.Multipart;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
@@ -35,17 +34,34 @@ import exception.LoginException;
 import logic.Mail;
 import logic.ShopService;
 import logic.User;
+import util.CipherUtil;
 /*모든 메서드는 관리자로 로그인했을 때만 실행 => AOP */
 @Controller
 @RequestMapping("admin")
 public class AdminController {
 	@Autowired
 	private ShopService service;
+	@Autowired
+	private CipherUtil cipher;
+
+	private List<User> emailDecrypt(List<User> userlist) {
+		for(User u : userlist) {
+			try {
+				//키를 userid를 SHA-256 알고리즘의 해쉬값의 앞 16자리로 설정함
+				String key = cipher.makehash(u.getUserid(), "SHA-256");
+				String email = cipher.decrypt(u.getEmail(), key);
+				u.setEmail(email);
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return userlist;
+	}
 	
 	@RequestMapping("list")
 	public ModelAndView list(String sort, HttpSession session) {
 		ModelAndView mav = new ModelAndView();
-		List<User> userList = service.selectUserAll();
+		List<User> userList = emailDecrypt(service.selectUserAll());
 		if(sort != null) {
 			switch(sort) {
 			case "10" : 
@@ -55,8 +71,7 @@ public class AdminController {
 					public int compare(User u1, User u2) {
 						return u1.getUserid().compareTo(u2.getUserid());
 					}
-				});
-				
+				});				
 				break;
 			case "11" : 
 				Collections.sort(userList, (u1,u2) -> u2.getUserid().compareTo(u1.getUserid()));
@@ -89,8 +104,8 @@ public class AdminController {
 		}
 		mav.addObject("list",userList); 
 		return mav;
-	}
-	
+	}	
+
 	@RequestMapping("mailForm")	
 	public ModelAndView mailForm(String[] idchks, HttpSession session) { //String[] idchks = request.getParameterValues
 		//idchks 배열말고 String으로 받으면 ,로 붙어서 들어옴
@@ -98,7 +113,7 @@ public class AdminController {
 		if(idchks == null || idchks.length == 0) {
 			throw new LoginException("메일을 보낼 대상을 선택하세요.", "list");
 		}
-		List<User> list = service.getUserList(idchks);
+		List<User> list = emailDecrypt(service.getUserList(idchks));
 		mav.addObject("list",list);
 		return mav;
 	}

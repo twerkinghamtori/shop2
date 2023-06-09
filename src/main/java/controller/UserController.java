@@ -1,5 +1,7 @@
 package controller;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 import javax.servlet.http.HttpSession;
@@ -19,6 +21,7 @@ import exception.LoginException;
 import logic.Sale;
 import logic.ShopService;
 import logic.User;
+import util.CipherUtil;
 
 
 @Controller
@@ -26,6 +29,17 @@ import logic.User;
 public class UserController {
 	@Autowired
 	private ShopService service;
+	@Autowired
+	private CipherUtil cipher;
+	
+	private String emailEncrypt(String email, String userid) throws Exception {
+		String key = cipher.makehash(userid, "SHA-256");
+		return cipher.emailEncrypt(email, key);
+	}
+
+	private String passwordHash(String password) throws Exception {
+		return cipher.makehash(password, "SHA-512");
+	}
 	
 	@GetMapping("*") //controller에서 설정되지 않은 모든 요청시 호출되는 메서드
 	public ModelAndView join() {
@@ -35,7 +49,7 @@ public class UserController {
 	}
 	
 	@PostMapping("join")
-	public ModelAndView userAdd(@Valid User user, BindingResult br) {
+	public ModelAndView userAdd(@Valid User user, BindingResult br) throws Exception {
 		ModelAndView mav = new ModelAndView();
 		//input check
 		if(br.hasErrors()) {
@@ -44,8 +58,14 @@ public class UserController {
 			br.reject("error.input.check");
 			return mav;
 		}
-		//회원가입 => db의 useraccount table에 저장
+		//회원가입 => db의 usersecurity table에 저장
 		try {
+			/*
+			 * password : SHA-512 해쉬값 변경
+			 * email : AES 알고리즘으로 암호화
+			 */
+			user.setPassword(passwordHash(user.getPassword()));
+			user.setEmail(emailEncrypt(user.getEmail(), user.getUserid()));
 			service.userinsert(user);
 			mav.addObject("user",user);
 		} catch(DataIntegrityViolationException e) { //중복키 error
@@ -56,10 +76,10 @@ public class UserController {
 		}
 		mav.setViewName("redirect:login");
 		return mav;
-	}
-	
+	}	
+
 	@PostMapping("login")
-	public ModelAndView login(@Valid User user, BindingResult br, HttpSession session) {
+	public ModelAndView login(@Valid User user, BindingResult br, HttpSession session) throws Exception {
 		ModelAndView mav = new ModelAndView();
 		if(br.hasErrors()) {
 			mav.getModel().putAll(br.getModel());
@@ -74,7 +94,8 @@ public class UserController {
 			return mav;
 		}
 		//비밀번호 검증
-		if(user.getPassword().equals(dbUser.getPassword())) {
+		String hashPass = cipher.makehash(user.getPassword(), "SHA-512");
+		if(hashPass.equals(dbUser.getPassword())) {
 			session.setAttribute("loginUser", dbUser);
 			mav.addObject("userid",dbUser.getUserid());
 			mav.setViewName("redirect:mypage");
@@ -92,28 +113,31 @@ public class UserController {
 	}
 	
 	@RequestMapping("mypage")
-	public ModelAndView idCheckMypage(String userid, HttpSession session) {
+	public ModelAndView idCheckMypage(String userid, HttpSession session) throws Exception {
 		ModelAndView mav = new ModelAndView();
 		List<Sale> saleList = service.selectSaleList(userid);
-		User user = service.selectUserOne(userid);
+		User user = service.selectUserOne(userid);			
+		user.setEmail(cipher.decrypt(user.getEmail(), cipher.makehash(userid, "SHA-256")));
 		mav.addObject("saleList", saleList);
 		mav.addObject("user",user);
 		return mav;
 	}
-	
+
 	@GetMapping({"update", "delete"})
-	public ModelAndView idCheckUpdateGet(String userid, HttpSession session) {
+	public ModelAndView idCheckUpdateGet(String userid, HttpSession session) throws Exception {
 		ModelAndView mav = new ModelAndView();
 		User user = service.selectUserOne(userid);
+		user.setEmail(cipher.decrypt(user.getEmail(), cipher.makehash(userid, "SHA-256")));
 		mav.addObject("user",user);
 		return mav;
 	}
 	
 	@PostMapping("update")
-	public ModelAndView idCheckUpdatePost(@Valid User user, BindingResult br, String userid, HttpSession session) {
+	public ModelAndView idCheckUpdatePost(@Valid User user, BindingResult br, String userid, HttpSession session) throws Exception {
 		ModelAndView mav = new ModelAndView();
 		User sessionUser = (User)session.getAttribute("loginUser");
-		if(!user.getPassword().equals(sessionUser.getPassword())) {
+		User dbUser = service.selectUserOne(user.getUserid());
+		if(!passwordHash(user.getPassword()).equals(dbUser.getPassword())) {
 			mav.getModel().putAll(br.getModel());
 			br.reject("error.login.password");			
 			return mav;
@@ -123,9 +147,10 @@ public class UserController {
 			br.reject("error.input.check");
 			return mav;
 		}	
-		try {
+		try {			
+			user.setEmail(emailEncrypt(user.getEmail(), user.getUserid()));
 			service.userUpdate(user);
-			if(!sessionUser.getUserid().equals("admin")) session.setAttribute("loginUser", user);
+			if(!sessionUser.getUserid().equals("admin")) session.setAttribute("loginUser", dbUser);
 			mav.addObject("user",user);		
 		} catch(DataIntegrityViolationException e) { 
 			e.printStackTrace();

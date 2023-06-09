@@ -19,6 +19,7 @@ import dao.ItemDao;
 import dao.SaleDao;
 import dao.SaleItemDao;
 import dao.UserDao;
+import util.CipherUtil;
 
 @Service //@Component + Service(controller기능과 dao 기능의 중간 역할 기능)
 public class ShopService {
@@ -36,6 +37,9 @@ public class ShopService {
 	
 	@Autowired
 	private BoardDao boardDao;
+	
+	@Autowired
+	private CipherUtil cipher;
 	
 	public List<Item> itemList() {
 		return itemDao.list();

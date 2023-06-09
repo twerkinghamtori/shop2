@@ -10,7 +10,7 @@ import exception.LoginException;
 import logic.User;
 
 @Component
-@Aspect
+//@Aspect
 public class AdminLoginAspect {
 	@Before("execution(* controller.AdminController.*(..)) && args(..,session))")
 	public void adminCheck(HttpSession session) throws Throwable {
