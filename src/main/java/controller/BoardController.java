@@ -22,6 +22,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import exception.LoginException;
 import logic.Board;
+import logic.Comment;
 import logic.ShopService;
 
 @Controller
@@ -112,7 +113,7 @@ public class BoardController {
 	}
 	
 	@RequestMapping("detail")
-	public ModelAndView detail(int num, HttpSession session) {
+	public ModelAndView detail(int num, String readcnt, HttpSession session) {
 		ModelAndView mav = new ModelAndView();
 		Board b = service.getBoard(num);
 		if(b==null) {
@@ -126,9 +127,12 @@ public class BoardController {
 			case "1" : boardName = "공지사항"; break;
 			case "2" : boardName = "자유게시판"; break;
 			case "3" : boardName = "QnA"; break;
+		}				
+		if(readcnt == null || !readcnt.equals("f")) {
+			service.addReadCnt(num);
 		}		
-		
-		service.addReadCnt(num);
+		List<Comment> commlist = service.getCommList(num);
+		mav.addObject("commlist",commlist);
 		mav.addObject("board",b);
 		mav.addObject("boardName",boardName);
 		return mav;
@@ -229,4 +233,35 @@ public class BoardController {
 		model.addAttribute("fileName", fileName);
 		return "ckedit"; //view이름
 	}
+	
+//	@RequestMapping("comment")
+//	public String comment(Comment comm) {
+//		int seq = service.getMaxSeq(comm.getNum());
+//		comm.setSeq(++seq);
+//		service.addComment(comm);
+//		return "redirect:detail?num=" + comm.getNum() + "#comment";
+//	}
+	
+	@PostMapping("comment") 
+	public ModelAndView loginCheckcommentPost(Integer num, String writer, String pass, String content, HttpSession session) {
+		ModelAndView mav = new ModelAndView();
+		service.addComment(num, writer, pass, content);
+//		List<Comment> commlist = service.getCommList(num);
+//		mav.addObject("commlist",commlist);
+		mav.setViewName("redirect:detail?num="+num + "&readcnt=f");
+		return mav;
+	}
+	
+	@RequestMapping("commdel")
+	public String commdel(int num, int seq, String pass) {
+		Comment cmt = service.selectComment(num, seq);
+		if(cmt.getPass().equals(pass)) {
+			service.delComment(num, seq);
+		}
+		else {
+			throw new LoginException("비밀번호가 일치하지 않습니다.", "detail?num=" + num + "&readcnt=f");
+		}
+		return "redirect:detail?num=" + num + "&readcnt=f";
+	}
+	
 }

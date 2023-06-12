@@ -11,9 +11,9 @@ import org.apache.ibatis.annotations.Update;
 import logic.Board;
 
 public interface BoardMapper {
-	String select = "select num, writer, pass, title, content, file1 fileurl, regdate, readcnt, grp, grplevel, grpstep, boardid from board";
+	String select = "select num, writer, pass, title, content, file1 fileurl, regdate, readcnt, grp, grplevel, grpstep, boardid, (SELECT COUNT(*) FROM comment c WHERE c.num=b.num) commcnt from board b";
 
-	@Select("select ifnull(max(num), 0) from board")
+	@Select("select ifnull(max(num), 1) from board")
 	int maxNum();
 	
 	@Insert("insert into board values (#{num}, #{writer}, #{pass}, #{title}, #{content}, #{fileurl}, #{boardid}, now(), 0, #{grp}, #{grplevel}, #{grpstep})")

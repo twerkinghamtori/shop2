@@ -72,6 +72,7 @@
 						<c:forEach begin="1" end="${board.grplevel }">&nbsp;&nbsp;</c:forEach>
 						<c:if test="${board.grplevel > 0 }">└</c:if>
 						<a href="detail?num=${board.num }">${board.title }</a>
+						<a href="detail?num=${board.num }#comment">[${board.commcnt }]</a>
 					</td>
 					<td>${board.writer }</td>
 					<td>

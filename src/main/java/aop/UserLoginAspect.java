@@ -10,7 +10,7 @@ import exception.LoginException;
 import logic.User;
 
 @Component
-//@Aspect
+@Aspect
 public class UserLoginAspect {
 	//@Around(..)
 	@Before("execution(* controller.User*.idCheck*(..)) && args(..,userid,session)")

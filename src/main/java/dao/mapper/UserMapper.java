@@ -42,6 +42,9 @@ public interface UserMapper {
 	@Select("select password from usersecurity where userid=#{userid} and email=#{email} and phoneno=#{phoneno}")
 	String searchPw(Map<String, Object> param);
 
+	@Select("select * from usersecurity where phoneno=#{phoneno}")
+	List<User> selectUserPhoneno(String phoneno);
+
 //	@Select({"<script>",
 //		"select * from useraccount ",
 //		"<foreach collection='idchks' item='idchk' separator=',' open='where userid in (' close=')'>#{idchk}</foreach>",

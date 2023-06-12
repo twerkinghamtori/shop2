@@ -41,6 +41,10 @@ public class UserController {
 		return cipher.makehash(password, "SHA-512");
 	}
 	
+	private String emailDecrypt(User u) throws Exception {
+		return cipher.decrypt(u.getEmail(), cipher.makehash(u.getUserid(), "SHA-256"));
+	}	
+	
 	@GetMapping("*") //controller에서 설정되지 않은 모든 요청시 호출되는 메서드
 	public ModelAndView join() {
 		ModelAndView mav = new ModelAndView();
@@ -192,13 +196,13 @@ public class UserController {
 	 UserLoginAspect.loginCheck() : UserController.loginCheck*(..)인 메서드. 마지막 매개변수 session인 메서드
 	 */	
 	@PostMapping("password")
-	public String loginCheckPassword(String password, String chgpass, HttpSession session) {
+	public String loginCheckPassword(String password, String chgpass, HttpSession session) throws Exception {
 		User sessionUser = (User)session.getAttribute("loginUser");
-		if(!password.equals(sessionUser.getPassword())) {
+		if(!passwordHash(password).equals(sessionUser.getPassword())) {
 			throw new LoginException("기존 비밀번호가 틀립니다.", "password");
 		} else {
 			try {
-				User user = service.changePass(chgpass, sessionUser.getUserid());
+				User user = service.changePass(passwordHash(chgpass), sessionUser.getUserid());
 				session.setAttribute("loginUser", user);
 				//sessionUser.setPassword(chgpass);
 				return "redirect:mypage?userid="+user.getUserid();
@@ -210,9 +214,9 @@ public class UserController {
 	
 	//{url}search => {url} 지정되지 않음.	*search 요청시 호출되는 메서드.
 	@PostMapping("{url}search")
-	public ModelAndView search(User user, BindingResult br, @PathVariable String url) { //@Valid User user => 다 걸리니까 쓸 수가 없음.
+	public ModelAndView search(User user, BindingResult br, @PathVariable String url) throws Exception { //@Valid User user => 다 걸리니까 쓸 수가 없음.
 		//@PathVariable : {url} 의 이름을 매개변수로 전달.
-		//		요청: idsearch : url => "id" // 요청: idsearch : url => "pw"
+		//		요청: idsearch : url => "id" // 요청: pwsearch : url => "pw"
 		ModelAndView mav = new ModelAndView();
 		String code = "error.userid.search";
 		String title = "아이디";
@@ -239,7 +243,31 @@ public class UserController {
 		//mybatis 구현시 해당 레코드가 없는 경우 결과값이 null임.
 		//mybatis에서는 데이터가 없어도 exception을 내지 않기 때문에 예외처리(EmptyResultDataAccessException)가 불가함
 		if(user.getUserid() != null && user.getUserid().trim().equals("")) user.setUserid(null);		
-		String result = service.getSearch(user);
+//		String result = service.getSearch(user);
+		String result = null;
+		if(user.getUserid() == null) {
+			List<User> list = service.getUserList(user.getPhoneno());
+			for(User u : list) {
+				u.setEmail(this.emailDecrypt(u));
+				if(u.getEmail().equals(user.getEmail())) {
+					result = u.getUserid();
+				}
+			}			
+		} else {
+			user.setEmail(this.emailEncrypt(user.getEmail(), user.getUserid()));
+			result = service.getSearch(user);
+			if(result != null) { //비밀번호 검색 성공 => 비밀번호 초기화
+				String pass = null;
+				try {
+					pass = cipher.makehash(user.getUserid(), "SHA-512");
+				} catch(NoSuchAlgorithmException e) {
+					e.printStackTrace();
+				}
+				int index = (int)(Math.random() * (pass.length() - 10));
+				result = pass.substring(index, index+6);
+				service.changePass(passwordHash(result), user.getUserid());
+			}
+		}
 		if(result == null) {
 			br.reject(code);
 			mav.getModel().putAll(br.getModel());

@@ -80,4 +80,10 @@ public class UserDao {
 		return template.getMapper(cls).searchPw(param);
 	}
 
+	public List<User> selectUserPhoneno(String phoneno) {
+		param.clear();
+		param.put("phoneno", phoneno);
+		return template.getMapper(cls).selectUserPhoneno(phoneno);
+	}
+
 }
