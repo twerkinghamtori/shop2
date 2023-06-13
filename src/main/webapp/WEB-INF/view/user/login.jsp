@@ -59,6 +59,9 @@
 				</td>
 			</tr>
 		</table>
+		<p>
+			<a href="${apiURL }"><img height="30" src="http://static.nid.naver.com/oauth/small_g_in.PNG"></a>
+		</p>
 	</form:form>
 </body>
 </html>

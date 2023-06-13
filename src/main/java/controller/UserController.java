@@ -1,12 +1,22 @@
 package controller;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.List;
 
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Controller;
@@ -81,7 +91,113 @@ public class UserController {
 		mav.setViewName("redirect:login");
 		return mav;
 	}	
-
+	
+	@GetMapping("login")
+	public ModelAndView loginForm(HttpSession session) {
+		ModelAndView mav = new ModelAndView();
+		//apiURL을 생성하여 view로 전달
+		String clientId = "ajaWNgFy9gvIJ77K43cD";
+		String redirectURI = null;
+		try {
+			redirectURI = URLEncoder.encode("http://localhost:8080/shop2/user/naverLogin","UTF-8");
+		} catch(UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		SecureRandom random = new SecureRandom(); //난수발생기
+		String state = new BigInteger(130,random).toString();
+		String apiURL = "https://nid.naver.com/oauth2.0/authorize?response_type=code";
+		apiURL += "&client_id=" + clientId;
+		apiURL += "&redirect_uri=" + redirectURI;
+		apiURL += "&state=" + state; 
+		mav.addObject("apiURL",apiURL);
+		mav.addObject(new User());
+		session.getServletContext().setAttribute("state", state);
+		System.out.println("sessionId : " + session.getId());
+		return mav;
+	}
+	
+	@RequestMapping("naverLogin")
+	public String naverLogin(String code, String state, HttpSession session) throws Exception {
+		System.out.println("2.sessionId : " + session.getId());
+		String clientId = "ajaWNgFy9gvIJ77K43cD";
+		String clientSecret = "0mD0OkDSBx";
+		String redirectURI = URLEncoder.encode("YOUR_CALLBACK_URL", "UTF-8");
+		  String apiURL;
+		  apiURL = "https://nid.naver.com/oauth2.0/token?grant_type=authorization_code&";
+		  apiURL += "client_id=" + clientId;
+		  apiURL += "&client_secret=" + clientSecret;
+		  apiURL += "&redirect_uri=" + redirectURI;
+		  apiURL += "&code=" + code;
+		  apiURL += "&state=" + state;
+		  System.out.println("code=" + code + ", state=" + state);
+		  String access_token = "";
+		  String refresh_token = ""; //아마도 재로그인할 때 쓸듯..
+		  StringBuffer sb = new StringBuffer();
+		  System.out.println("apiURL="+apiURL);
+		  try {
+			  URL url = new URL(apiURL);
+			  HttpURLConnection con = (HttpURLConnection) url.openConnection();
+			  con.setRequestMethod("GET");
+			  int responseCode = con.getResponseCode();
+			  BufferedReader br;
+			  System.out.println("responseCode=" + responseCode);
+			  if(responseCode == 200) { 
+					br = new BufferedReader(new InputStreamReader(con.getInputStream(), "UTF-8"));
+			  } else {
+					br = new BufferedReader(new InputStreamReader(con.getErrorStream(), "UTF-8")); 
+		      }
+			  String inputLine;
+			  while((inputLine = br.readLine()) != null) {
+				  sb.append(inputLine);
+			  }
+			  br.close();
+			  if(responseCode == 200) {
+				  System.out.println("\n===========첫번째 요청에 대한 응답메세지 (sb 1):");
+				  System.out.println("sb : " + sb.toString());
+			  }
+			  //sb(=response (네이버 응답 메세지) ) : JSON형태의 문자열 {"access_token":"AAAANxVDVPVQ-O....}
+		  } catch(Exception e) {
+			  System.out.println(e);
+		  }
+		  JSONParser parser = new JSONParser();
+		  JSONObject json = (JSONObject)parser.parse(sb.toString()); //문자열 -> JSON객체
+		  String token = (String)json.get("access_token"); //토큰
+		  System.out.println("\n========token : " + token);
+		  String header = "Bearer " + token;
+		  try {
+			  apiURL = "https://openapi.naver.com/v1/nid/me"; //두번째 요청. 프로필 정보 조회(토큰값을 이용해서)
+			  URL url = new URL(apiURL);
+			  HttpURLConnection con = (HttpURLConnection) url.openConnection();
+			  con.setRequestMethod("GET");
+			  con.setRequestProperty("Authorization", header); //토큰 전달. 인증정보
+			  int responseCode = con.getResponseCode();
+			  BufferedReader br;
+			  sb = new StringBuffer();
+			  if(responseCode == 200) { 
+				  System.out.println("로그인 정보 정상 수신");
+				  br = new BufferedReader(new InputStreamReader(con.getInputStream(), "UTF-8"));
+			  } else {
+				  System.out.println("로그인 정보 수신 오류");
+				  br = new BufferedReader(new InputStreamReader(con.getErrorStream(), "UTF-8")); 
+		      }
+			  String inputLine;
+			  while((inputLine = br.readLine()) != null) {
+				  sb.append(inputLine);
+			  }
+			  br.close();
+			  System.out.println("sb.toString()");
+		  } catch(Exception e) {
+			  System.out.println(e);
+		  }
+		  json = (JSONObject)parser.parse(sb.toString());
+		  System.out.println(json);
+		  JSONObject jsondetail = (JSONObject)json.get("response");
+		System.out.println(jsondetail.get("id"));
+		System.out.println(jsondetail.get("name"));
+		System.out.println(jsondetail.get("email"));
+		return null;
+	}
+	
 	@PostMapping("login")
 	public ModelAndView login(@Valid User user, BindingResult br, HttpSession session) throws Exception {
 		ModelAndView mav = new ModelAndView();
