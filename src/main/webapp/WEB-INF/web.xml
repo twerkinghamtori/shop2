@@ -28,6 +28,7 @@ id="WebApp_ID" version="4.0">
   			config.MvcConfig
   			config.DBConfig
   			config.WebSocketConfig
+  			config.BatchConfig
   		</param-value> 
   	</init-param>
   	<load-on-startup>1</load-on-startup> <!-- server restart => Dispatcher Servlet 1개 로드 -->

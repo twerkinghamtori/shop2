@@ -11,7 +11,7 @@ import org.apache.ibatis.annotations.Update;
 import logic.User;
 
 public interface UserMapper {
-	@Insert("insert into usersecurity (userid, password, username, phoneno, postcode, address, email, birthday) values (#{userid}, #{password}, #{username}, #{phoneno}, #{postcode}, #{address}, #{email}, #{birthday})")
+	@Insert("insert into usersecurity (userid, channel, password, username, phoneno, postcode, address, email, birthday) values (#{userid}, #{channel}, #{password}, #{username}, #{phoneno}, #{postcode}, #{address}, #{email}, #{birthday})")
 	void userinsert(User user);
 
 	@Select({"<script> ",

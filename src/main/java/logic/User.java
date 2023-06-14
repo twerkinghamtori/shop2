@@ -19,6 +19,7 @@ public class User {
 	private String userid;
 //	@Pattern(regexp="^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,10}$",
 //			message="비밀번호는 최소 8 자 및 최대 10 자, 하나 이상의 대문자, 하나의 소문자, 하나의 숫자 및 하나의 특수 문자를 포함하세요.")
+	private String channel; //소셜로그인
 	@Size(min=3, max=10, message="비밀번호는 3자이상 10자 이하로 입력하세요.")
 	private String password;
 	@NotEmpty(message="사용자이름은 필수입니다.")

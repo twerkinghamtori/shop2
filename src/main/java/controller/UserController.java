@@ -10,6 +10,8 @@ import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpSession;
@@ -195,7 +197,24 @@ public class UserController {
 		System.out.println(jsondetail.get("id"));
 		System.out.println(jsondetail.get("name"));
 		System.out.println(jsondetail.get("email"));
-		return null;
+		String userid = jsondetail.get("id").toString();
+		User user = service.selectUserOne(userid);
+		if(user == null) {
+			user = new User();
+			user.setUserid(userid);
+			user.setUsername(jsondetail.get("name").toString());
+			String email = jsondetail.get("email").toString();
+			user.setEmail(emailEncrypt(email, userid));
+			user.setChannel("naver");
+			user.setPhoneno(jsondetail.get("mobile").toString());
+			String birthday = jsondetail.get("birthyear").toString() + "-" + jsondetail.get("birthday").toString();
+			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+            Date date = format.parse(birthday);
+            user.setBirthday(date);
+			service.userinsert(user);
+		}
+		session.setAttribute("loginUser", user);
+		return "redirect:mypage?userid="+user.getUserid();
 	}
 	
 	@PostMapping("login")
