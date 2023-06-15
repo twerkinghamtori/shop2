@@ -44,9 +44,9 @@ public class CountScheduler {
 	 * 2. exchange 테이블 생성
 	 */
 	//cron="0 0 10 ? * MON-FRI"
-	@Scheduled(cron="0 0 10 ? * MON-FRI")
+	@Scheduled(cron="10 0 10 * * ?")
 	public void exchange() {
-		System.out.println("start");
+		System.out.println("환율 스케줄러 실행");
 		Document doc = null;
 		List<List<String>> trlist = new ArrayList<>();
 		String url = "https://www.koreaexim.go.kr/wg/HPHKWG057M01";
@@ -61,11 +61,7 @@ public class CountScheduler {
 				for(Element td : tds) {
 					tdlist.add(td.html());
 				}
-				if(tdlist.size()>0) {
-					if(tdlist.get(0).equals("EUR") || tdlist.get(0).equals("JPY(100)") || tdlist.get(0).equals("CNH") || tdlist.get(0).equals("USD")) {
-						trlist.add(tdlist);
-					}
-				}				
+				if(tdlist.size()>0) trlist.add(tdlist);			
 			}
 		} catch(IOException e) {
 			e.printStackTrace();

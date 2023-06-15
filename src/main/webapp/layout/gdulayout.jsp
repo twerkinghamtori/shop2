@@ -28,6 +28,7 @@
 "https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js">
 </script>
 <script type="text/javascript" src="http://cdn.ckeditor.com/4.5.7/standard/ckeditor.js"></script>
+<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=2caf41877e5cc64a48762982cb8b7dd2"></script>
 <style>
 html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
 </style>
@@ -92,10 +93,34 @@ html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
     class="w3-bar-item w3-button w3-padding <c:if test='${url ==  "naver"}'>w3-blue</c:if>">
     <i class="fa fa-eye fa-fw"></i>&nbsp; 네이버 검색</a>
   </div>
-  <br>
+  <br>    
+  <div id="map" style="width:300px;height:300px;"></div>
+  <script>
+  	var mapContainer = document.getElementById('map'), // 지도를 표시할 div 
+  	mapOption = { 
+      	center: new kakao.maps.LatLng(37.47309138434624, 126.89053743266287), // 지도의 중심좌표
+      	level: 3 // 지도의 확대 레벨
+  	};
+	//지도를 표시할 div와  지도 옵션으로  지도를 생성합니다
+	var map = new kakao.maps.Map(mapContainer, mapOption); 
+	// 마커가 표시될 위치입니다 
+	var markerPosition = new kakao.maps.LatLng(37.47309138434624, 126.89053743266287); 
+
+	// 마커를 생성합니다
+	var marker = new kakao.maps.Marker({
+	    position: markerPosition
+	});
+
+	// 마커가 지도 위에 표시되도록 설정합니다
+	marker.setMap(map);
+
+	// 마커가 드래그 가능하도록 설정합니다 
+	marker.setDraggable(true); 
+	</script>
   <div class="w3-container">
   	<div id="exchange"></div>
   </div>
+
 </nav>
 
 

@@ -30,7 +30,7 @@ public class EchoHandler extends TextWebSocketHandler implements InitializingBea
 	public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) throws Exception {
 		//클라이언트가 전송한 메세지
 		String loadMessage = (String)message.getPayload();
-		System.out.println(session.getId() + " : 클라이언트 메세지 : " + loadMessage);
+//		System.out.println(session.getId() + " : 클라이언트 메세지 : " + loadMessage);
 		clients.add(session); //set객체니까 2번 저장되지는 않음.
 		for(WebSocketSession s : clients) { //(broadcasting)
 			s.sendMessage(new TextMessage(loadMessage)); //client에게 받은 메세지를 모든 client에게 전송
