@@ -92,7 +92,7 @@ public class CartController {
 		Cart cart = (Cart) session.getAttribute("CART");
 		User user = (User)session.getAttribute("loginUser");
 		String merchant_id = user.getUserid() + "-" + session.getId();
-		map.put("merchant_id", merchant_id);
+		map.put("merchant_uid", merchant_id);
 		map.put("name", cart.getItemSetList().get(0).getItem().getName() + " 외 " + (cart.getItemSetList().size()-1) + "개");
 		map.put("amount", cart.getTotal());
 //		String email = service.emailDecrypt(user);
