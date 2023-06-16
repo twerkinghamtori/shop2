@@ -1,6 +1,8 @@
 package controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpSession;
 
@@ -9,6 +11,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import exception.CartEmptyException;
@@ -79,6 +82,28 @@ public class CartController {
 		return null;
 	}	
 	
+	/*
+	 * 카카오 결제 : ajax로 요청됨 
+	 */
+	@RequestMapping("kakao")
+	@ResponseBody
+	public Map<String, Object> kakao(HttpSession session) {
+		Map<String, Object> map = new HashMap<>();
+		Cart cart = (Cart) session.getAttribute("CART");
+		User user = (User)session.getAttribute("loginUser");
+		String merchant_id = user.getUserid() + "-" + session.getId();
+		map.put("merchant_id", merchant_id);
+		map.put("name", cart.getItemSetList().get(0).getItem().getName() + " 외 " + (cart.getItemSetList().size()-1) + "개");
+		map.put("amount", cart.getTotal());
+//		String email = service.emailDecrypt(user);
+//		map.put("buyer_email", email);
+		map.put("buyer_name", user.getUsername());
+		map.put("buyer_tel", user.getPhoneno());
+		map.put("buyer_addr", user.getAddress());
+		map.put("buyer_postcode", user.getPostcode());			
+		return map; //클라이언트는 json 객체로 전달
+	}
+	
 	@RequestMapping("end") //주문확정
 	public ModelAndView checkend(HttpSession session) {
 		//1. 로그인, 장바구니 상품 존재 => AOP로 설정. (checkout이랑 같으니까)
@@ -93,4 +118,6 @@ public class CartController {
 		mav.addObject("sale",sale);
 		return mav;
 	}
+	
+	
 } 
